@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Deepfake Audio Detection</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+            font-family:'Poppins',sans-serif;
+            background:linear-gradient(135deg,#0f172a,#111827,#1e293b);
+            height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            overflow:hidden;
+            color:white;
+            position:relative;
+        }
+
+        /* Background Glow Effects */
+
+        .bg-glow{
+            position:absolute;
+            width:500px;
+            height:500px;
+            background:#2563eb;
+            filter:blur(150px);
+            opacity:0.25;
+            border-radius:50%;
+            top:-100px;
+            left:-100px;
+        }
+
+        .bg-glow2{
+            position:absolute;
+            width:400px;
+            height:400px;
+            background:#7c3aed;
+            filter:blur(150px);
+            opacity:0.25;
+            border-radius:50%;
+            bottom:-100px;
+            right:-100px;
+        }
+
+        /* Main Card */
+
+        .container{
+            position:relative;
+            width:430px;
+            padding:40px;
+            border-radius:28px;
+            background:rgba(255,255,255,0.08);
+            backdrop-filter:blur(20px);
+            border:1px solid rgba(255,255,255,0.08);
+            box-shadow:0 8px 32px rgba(0,0,0,0.45);
+            text-align:center;
+            z-index:10;
+        }
+
+        /* AI Logo */
+
+        .logo{
+            width:85px;
+            height:85px;
+            margin:0 auto 25px;
+            border-radius:24px;
+            background:linear-gradient(135deg,#2563eb,#7c3aed);
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            font-size:36px;
+            font-weight:700;
+            color:white;
+            box-shadow:0 10px 30px rgba(37,99,235,0.45);
+        }
+
+        /* Title */
+
+        h1{
+            font-size:42px;
+            line-height:1.2;
+            margin-bottom:18px;
+            font-weight:700;
+        }
+
+        /* Description */
+
+        p{
+            color:#cbd5e1;
+            font-size:15px;
+            line-height:1.8;
+            margin-bottom:30px;
+        }
+
+        /* Upload Box */
+
+        .upload-box{
+            border:2px dashed rgba(255,255,255,0.2);
+            border-radius:22px;
+            padding:25px 20px;
+            cursor:pointer;
+            transition:0.3s ease;
+            background:rgba(255,255,255,0.03);
+
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            align-items:center;
+
+            min-height:180px;
+            overflow:hidden;
+        }
+
+        .upload-box:hover{
+            border-color:#60a5fa;
+            background:rgba(96,165,250,0.08);
+            transform:translateY(-3px);
+        }
+
+        /* Upload Icon */
+
+        .upload-icon{
+            font-size:65px;
+            margin-bottom:15px;
+            line-height:1;
+        }
+
+        /* Upload Text */
+
+        .file-label{
+            font-size:16px;
+            color:#94a3b8;
+            text-align:center;
+            line-height:1.7;
+        }
+
+        input[type="file"]{
+            display:none;
+        }
+
+        /* Button */
+
+        .btn{
+            width:100%;
+            margin-top:28px;
+            padding:16px;
+            border:none;
+            border-radius:16px;
+            background:linear-gradient(135deg,#2563eb,#7c3aed);
+            color:white;
+            font-size:17px;
+            font-weight:600;
+            cursor:pointer;
+            transition:0.3s ease;
+            box-shadow:0 10px 25px rgba(37,99,235,0.35);
+        }
+
+        .btn:hover{
+            transform:translateY(-2px);
+            box-shadow:0 14px 28px rgba(37,99,235,0.5);
+        }
+
+        /* Error Message */
+
+        .message{
+            margin-top:18px;
+            color:#f87171;
+            font-size:14px;
+        }
+
+        /* Footer */
+
+        .footer{
+            margin-top:25px;
+            font-size:12px;
+            color:#64748b;
+        }
+
+        /* Responsive */
+
+        @media(max-width:500px){
+
+            .container{
+                width:90%;
+                padding:30px;
+            }
+
+            h1{
+                font-size:34px;
+            }
+
+            .upload-box{
+                min-height:160px;
+            }
+
+        }
+        .selected-file{
+            margin-top:14px;
+            font-size:14px;
+            color:#60a5fa;
+            word-break:break-word;
+            max-width:100%;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <!-- Background Glow -->
+    <div class="bg-glow"></div>
+    <div class="bg-glow2"></div>
+
+    <!-- Main Container -->
+
+    <div class="container">
+
+        <!-- Logo -->
+
+        <div class="logo">
+            AI
+        </div>
+
+        <!-- Heading -->
+
+        <h1>
+            Deepfake Audio Detection
+        </h1>
+
+        <!-- Description -->
+
+        <p>
+            Upload a WAV audio file and analyze whether the voice is real or AI-generated using MFCC-based machine learning detection.
+        </p>
+
+        <!-- Upload Form -->
+
+        <form action="/" method="post" enctype="multipart/form-data">
+
+            <label class="upload-box">
+
+                <div class="upload-icon">
+                    🎵
+                </div>
+
+                <div class="file-label">
+                    Drag & Drop Audio File
+                    <br>
+                    or Click to Upload
+                </div>
+                
+                <div id="file-name" class="selected-file">
+                    No file selected
+                </div>
+                <input type="file" id="audio_file" name="audio_file" accept=".wav">
+
+            </label>
+
+            <!-- Submit Button -->
+
+            <button type="submit" class="btn">
+                Analyze Audio
+            </button>
+
+        </form>
+
+        <!-- Flask Message -->
+
+        {% if message %}
+            <p class="message">{{ message }}</p>
+        {% endif %}
+
+        <!-- Footer -->
+
+        <div class="footer">
+            Powered by MFCC + SVM Machine Learning
+        </div>
+
+    </div>
+
+</body>
+</html>
+
+<script>
+
+    const fileInput = document.getElementById("audio_file");
+    const fileName = document.getElementById("file-name");
+
+    fileInput.addEventListener("change", function(){
+
+        if(this.files && this.files.length > 0){
+            fileName.textContent = "Selected: " + this.files[0].name;
+        }
+        else{
+            fileName.textContent = "No file selected";
+        }
+
+    });
+
+</script>
