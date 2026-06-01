@@ -7,22 +7,68 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, confusion_matrix
 import joblib
+from sklearn.metrics import classification_report
 
-def extract_mfcc_features(audio_path, n_mfcc=13, n_fft=2048, hop_length=512):
+def extract_audio_features(audio_path):
     try:
-        audio_data, sr = librosa.load(audio_path, sr=None)
+        audio_data, sr = librosa.load(
+            audio_path,
+            sr=None
+        )
     except Exception as e:
-        print(f"Error loading audio file {audio_path}: {e}")
+        print(
+            f"Error loading audio file {audio_path}: {e}"
+        )
         return None
 
-    mfccs = librosa.feature.mfcc(y=audio_data, sr=sr, n_mfcc=n_mfcc, n_fft=n_fft, hop_length=hop_length)
-    return np.mean(mfccs.T, axis=0)
+    mfcc = librosa.feature.mfcc(
+        y=audio_data,
+        sr=sr,
+        n_mfcc=13
+    )
+
+    delta = librosa.feature.delta(mfcc)
+
+    delta2 = librosa.feature.delta(
+        mfcc,
+        order=2
+    )
+
+    rms = np.mean(
+        librosa.feature.rms(
+            y=audio_data
+        )
+    )
+
+    zcr = np.mean(
+        librosa.feature.zero_crossing_rate(
+            audio_data
+        )
+    )
+
+    centroid = np.mean(
+        librosa.feature.spectral_centroid(
+            y=audio_data,
+            sr=sr
+        )
+    )
+
+    features = np.concatenate([
+        np.mean(mfcc, axis=1),
+        np.mean(delta, axis=1),
+        np.mean(delta2, axis=1),
+        [rms],
+        [zcr],
+        [centroid]
+    ])
+
+    return features
 
 def create_dataset(directory, label):
     X, y = [], []
     audio_files = glob.glob(os.path.join(directory, "*.wav"))
     for audio_path in audio_files:
-        mfcc_features = extract_mfcc_features(audio_path)
+        mfcc_features = extract_audio_features(audio_path)
         if mfcc_features is not None:
             X.append(mfcc_features)
             y.append(label)
@@ -30,7 +76,7 @@ def create_dataset(directory, label):
             print(f"Skipping audio file {audio_path}")
 
     print("Number of samples in", directory, ":", len(X))
-    print("Filenames in", directory, ":", [os.path.basename(path) for path in audio_files])
+    #print("Filenames in", directory, ":", [os.path.basename(path) for path in audio_files])
     return X, y
 
 
@@ -63,7 +109,12 @@ def train_model(X, y):
     if X_test is not None:
         X_test_scaled = scaler.transform(X_test)
 
-        svm_classifier = SVC(kernel='linear',probability=True, random_state=42)
+        svm_classifier = SVC(
+            kernel='rbf',
+            probability=True,
+            class_weight='balanced',
+            random_state=42
+        )
         svm_classifier.fit(X_train_scaled, y_train)
 
         y_pred = svm_classifier.predict(X_test_scaled)
@@ -73,6 +124,16 @@ def train_model(X, y):
 
         print("Accuracy:", accuracy)
         print("Confusion Matrix:")
+        print(
+            classification_report(
+                y_test,
+                y_pred,
+                target_names=[
+                    "genuine",
+                    "deepfake"
+                ]
+            )
+        )
         print(confusion_mtx)
     else:
         print("Insufficient samples for stratified splitting. Combine both classes into one for training.")
@@ -82,14 +143,14 @@ def train_model(X, y):
         svm_classifier.fit(X_train_scaled, y_train)
 
     # Save the trained SVM model and scaler
-    model_filename = "svm_model.pkl"
-    scaler_filename = "scaler.pkl"
+    model_filename = "svm_model_2.pkl"
+    scaler_filename = "scaler_2.pkl"
     joblib.dump(svm_classifier, model_filename)
     joblib.dump(scaler, scaler_filename)
 
 def analyze_audio(input_audio_path):
-    model_filename = "svm_model.pkl"
-    scaler_filename = "scaler.pkl"
+    model_filename = "svm_model_2.pkl"
+    scaler_filename = "scaler_2.pkl"
     svm_classifier = joblib.load(model_filename)
     scaler = joblib.load(scaler_filename)
 
@@ -100,7 +161,7 @@ def analyze_audio(input_audio_path):
         print("Error: The specified file is not a .wav file.")
         return
 
-    mfcc_features = extract_mfcc_features(input_audio_path)
+    mfcc_features = extract_audio_features(input_audio_path)
 
     if mfcc_features is not None:
         mfcc_features_scaled = scaler.transform(mfcc_features.reshape(1, -1))
@@ -130,6 +191,8 @@ def main():
         y = np.hstack((y_genuine, y_deepfake))
 
     train_model(X, y)
+    
+    
 
 if __name__ == "__main__":
     main()

@@ -12,12 +12,12 @@ PROJECT_ROOT = os.path.dirname(
 
 MODEL_PATH = os.path.join(
     PROJECT_ROOT,
-    "svm_model.pkl"
+    "svm_model_2.pkl"
 )
 
 SCALER_PATH = os.path.join(
     PROJECT_ROOT,
-    "scaler.pkl"
+    "scaler_2.pkl"
 )
 
 model = joblib.load(MODEL_PATH)

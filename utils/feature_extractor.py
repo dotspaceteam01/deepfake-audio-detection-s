@@ -38,10 +38,38 @@ def extract_audio_features(audio_path):
         n_mfcc=13
     )
 
-    mfcc_mean = np.mean(
-        mfcc.T,
-        axis=0
+    delta = librosa.feature.delta(
+        mfcc
     )
+
+    delta2 = librosa.feature.delta(
+        mfcc,
+        order=2
+    )
+
+    mfcc_mean = np.mean(
+        mfcc,
+        axis=1
+    )
+
+    delta_mean = np.mean(
+        delta,
+        axis=1
+    )
+
+    delta2_mean = np.mean(
+        delta2,
+        axis=1
+    )
+
+    combined_features = np.concatenate([
+        mfcc_mean,
+        delta_mean,
+        delta2_mean,
+        [rms],
+        [zcr],
+        [spectral_centroid]
+    ])
 
     return {
         "sample_rate": sr,
@@ -52,5 +80,5 @@ def extract_audio_features(audio_path):
             spectral_centroid,
             2
         ),
-        "mfcc_features": mfcc_mean.tolist()
+        "mfcc_features": combined_features.tolist()
     }
